@@ -39,6 +39,8 @@
     "deploy:env": "./scripts/deploy-env.sh push",
     "deploy:env:pull": "./scripts/deploy-env.sh pull",
     "deploy:env:diff": "./scripts/deploy-env.sh diff",
+    "deploy:compose": "./scripts/deploy-compose.sh push",
+    "deploy:compose:diff": "./scripts/deploy-compose.sh diff",
     "deploy:image": "./scripts/deploy-image.sh",
     "deploy:image:git": "./scripts/deploy-image.sh --via-git",
     "postinstall": "pnpm run prisma-generate",

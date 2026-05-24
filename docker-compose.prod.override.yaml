@@ -64,12 +64,12 @@ services:
       - "127.0.0.1:4007:5000"
 
     volumes:
-      - /opt/postiz/patches/backend/linkedin.provider.js:/app/apps/backend/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.provider.js:ro
-      - /opt/postiz/patches/orchestrator/linkedin.provider.js:/app/apps/orchestrator/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.provider.js:ro
-      - /opt/postiz/patches/backend/linkedin.page.provider.js:/app/apps/backend/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.page.provider.js:ro
-      - /opt/postiz/patches/orchestrator/linkedin.page.provider.js:/app/apps/orchestrator/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.page.provider.js:ro
-      # Multipart upload uses public-read ACL so files are CDN-accessible (DO Spaces doesn't allow bucket-policy via API)
-      - /opt/postiz/patches/backend/r2.uploader.js:/app/apps/backend/dist/libraries/nestjs-libraries/src/upload/r2.uploader.js:ro
+      # LinkedIn dual-app patches — see patches/README.md for what these change vs upstream.
+      # Paths are relative to the directory containing this compose file.
+      - ./patches/backend/linkedin.provider.js:/app/apps/backend/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.provider.js:ro
+      - ./patches/orchestrator/linkedin.provider.js:/app/apps/orchestrator/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.provider.js:ro
+      - ./patches/backend/linkedin.page.provider.js:/app/apps/backend/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.page.provider.js:ro
+      - ./patches/orchestrator/linkedin.page.provider.js:/app/apps/orchestrator/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.page.provider.js:ro
       - postiz-config:/config/
       - postiz-uploads:/uploads/
 
