@@ -1,0 +1,84 @@
+# Production override for Postiz at social.itsborderline.com.
+# All values come from .env.prod via ${VAR} substitution. Edit .env.prod locally,
+# then run `pnpm deploy:env` to sync. This file IS committed to the repo and is
+# safe to share publicly — only ${VAR} references, no actual secrets.
+#
+# What this override does on top of the upstream docker-compose.yaml:
+#   - Uses our patched image (ghcr.io/mmp7700/postiz-app:borderline)
+#   - Storage via DigitalOcean Spaces (STORAGE_PROVIDER=cloudflare + S3_ENDPOINT patch)
+#   - Bind-mounts LinkedIn provider patches enabling dual-app support
+#     (personal app via LINKEDIN_CLIENT_*, company-page app via LINKEDIN_PAGE_CLIENT_*)
+#   - Bind-mounts r2.uploader patch for DO Spaces public-read multipart ACL
+
+services:
+  postiz:
+    image: ghcr.io/mmp7700/postiz-app:borderline
+    environment:
+      # === Required ===
+      DATABASE_URL: ${DATABASE_URL}
+      REDIS_URL: ${REDIS_URL}
+      JWT_SECRET: ${JWT_SECRET}
+
+      # === Public-facing URLs ===
+      MAIN_URL: ${MAIN_URL}
+      FRONTEND_URL: ${FRONTEND_URL}
+      NEXT_PUBLIC_BACKEND_URL: ${NEXT_PUBLIC_BACKEND_URL}
+
+      # === Internal ===
+      BACKEND_INTERNAL_URL: ${BACKEND_INTERNAL_URL}
+      TEMPORAL_ADDRESS: ${TEMPORAL_ADDRESS}
+
+      # === Storage: DigitalOcean Spaces (cloudflare provider + our S3_ENDPOINT patch) ===
+      STORAGE_PROVIDER: ${STORAGE_PROVIDER}
+      S3_ENDPOINT: ${S3_ENDPOINT}
+      CLOUDFLARE_REGION: ${CLOUDFLARE_REGION}
+      CLOUDFLARE_ACCESS_KEY: ${CLOUDFLARE_ACCESS_KEY}
+      CLOUDFLARE_SECRET_ACCESS_KEY: ${CLOUDFLARE_SECRET_ACCESS_KEY}
+      CLOUDFLARE_BUCKETNAME: ${CLOUDFLARE_BUCKETNAME}
+      CLOUDFLARE_BUCKET_URL: ${CLOUDFLARE_BUCKET_URL}
+      CLOUDFLARE_ACCOUNT_ID: ${CLOUDFLARE_ACCOUNT_ID}
+
+      # === X / Twitter — OAuth 1.0a Consumer Keys ===
+      X_URL: ${X_URL}
+      X_API_KEY: ${X_API_KEY}
+      X_API_SECRET: ${X_API_SECRET}
+
+      # === LinkedIn — App 2 (OIDC + Share) for personal ===
+      LINKEDIN_CLIENT_ID: ${LINKEDIN_CLIENT_ID}
+      LINKEDIN_CLIENT_SECRET: ${LINKEDIN_CLIENT_SECRET}
+
+      # === LinkedIn — App 1 (Advertising API) for company pages ===
+      LINKEDIN_PAGE_CLIENT_ID: ${LINKEDIN_PAGE_CLIENT_ID}
+      LINKEDIN_PAGE_CLIENT_SECRET: ${LINKEDIN_PAGE_CLIENT_SECRET}
+
+      # === Misc ===
+      DISABLE_REGISTRATION: ${DISABLE_REGISTRATION}
+      IS_GENERAL: ${IS_GENERAL}
+      NX_ADD_PLUGINS: ${NX_ADD_PLUGINS}
+
+    networks:
+      - postiz-network
+      - temporal-network
+      - applications
+    ports: !override
+      - "127.0.0.1:4007:5000"
+
+    volumes:
+      - /opt/postiz/patches/backend/linkedin.provider.js:/app/apps/backend/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.provider.js:ro
+      - /opt/postiz/patches/orchestrator/linkedin.provider.js:/app/apps/orchestrator/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.provider.js:ro
+      - /opt/postiz/patches/backend/linkedin.page.provider.js:/app/apps/backend/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.page.provider.js:ro
+      - /opt/postiz/patches/orchestrator/linkedin.page.provider.js:/app/apps/orchestrator/dist/libraries/nestjs-libraries/src/integrations/social/linkedin.page.provider.js:ro
+      # Multipart upload uses public-read ACL so files are CDN-accessible (DO Spaces doesn't allow bucket-policy via API)
+      - /opt/postiz/patches/backend/r2.uploader.js:/app/apps/backend/dist/libraries/nestjs-libraries/src/upload/r2.uploader.js:ro
+      - postiz-config:/config/
+      - postiz-uploads:/uploads/
+
+  postiz-postgres:
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_DB: ${POSTGRES_DB}
+
+networks:
+  applications:
+    external: true

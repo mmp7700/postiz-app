@@ -5,6 +5,11 @@ dist
 tmp
 /out-tsc
 .env
+.env.prod
+.env.prod.bak.*
+.env.bak.*
+infra/.live/
+docker-compose.prod.override.yaml.preMigration.bak.*
 # dependencies
 node_modules
 

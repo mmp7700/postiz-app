@@ -36,6 +36,11 @@
     "prisma-reset": "cd ./libraries/nestjs-libraries/src/database/prisma && pnpm dlx prisma@6.5.0 db push --force-reset && pnpx prisma@6.5.0 db push",
     "docker-build": "./var/docker/docker-build.sh",
     "docker-create": "./var/docker/docker-create.sh",
+    "deploy:env": "./scripts/deploy-env.sh push",
+    "deploy:env:pull": "./scripts/deploy-env.sh pull",
+    "deploy:env:diff": "./scripts/deploy-env.sh diff",
+    "deploy:image": "./scripts/deploy-image.sh",
+    "deploy:image:git": "./scripts/deploy-image.sh --via-git",
     "postinstall": "pnpm run prisma-generate",
     "test": "jest --coverage --detectOpenHandles --reporters=default --reporters=jest-junit"
   },
